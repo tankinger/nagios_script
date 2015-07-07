@@ -1,0 +1,37 @@
+#!/usr/bin/python
+#encoding=utf-8
+import os
+
+
+def main():
+    pid1=os.system("pidof nrpe")
+    if (pid1!=0):
+        print pid1
+        print 'nrpe need to start'
+        os.system('/usr/local/nagios/bin/nrpe -c /usr/local/nagios/etc/nrpe.cfg -d')
+        pid_check=os.system('pidof nrpe')
+        if (pid_check==0):
+            print 'nrpe start successful'
+    if (pid1==0):
+        z=os.popen('pidof nrpe')
+        old_id=z.read()
+        print 'old id is %s' %old_id
+        print 'nrpe need to kill'
+       
+        p=os.popen('pidof nrpe')
+        x=p.read()
+        cmd='kill %s' %x
+        os.system(cmd)
+        print 'kill old id %s' %old_id
+        os.system('/usr/local/nagios/bin/nrpe -c /usr/local/nagios/etc/nrpe.cfg -d')
+        print 'nrpe start successful'
+        y=os.popen('pidof nrpe')
+        new_id=y.read()
+        print 'new id is %s' %new_id
+
+
+if __name__=='__main__':
+    main()
+ 
+
+

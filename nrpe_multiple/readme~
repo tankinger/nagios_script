@@ -1,0 +1,17 @@
+1: ./controller.py -e 查看功能
+2: 在执行./controller.py -c 前请查看以下几个文件：
+/home/nrpe_multiple/nrpe_install/nrpe-install.py 
+修改def main() 里面的new_ip 设置为本地ip地址 接收反馈的信息
+new_ip='10.9.32.132'
+
+
+先在目标机上面 用ip route show 查看下ip信息：
+10.0.0.0/24 dev br-eth1  proto kernel  scope link  src 10.0.0.8
+10.9.32.0/24 dev br-ex  proto kernel  scope link  src 10.9.32.180
+10.80.80.0/24 dev eth1  proto kernel  scope link  src 10.80.80.8
+修改def ip_address 里面的
+test=re.findall(r"br-ex\s+proto\s+kernel\s+scope\s+link\s+src\s+(\S+)\s*", line)
+if re.findall(r"br-ex\s+proto\s+kernel\s+scope\s+link\s+src\s+(\S+)\s*", line):
+把br-ex 修改成你需要显示的ip信息 可修改eth1 或者 br-eth1 根据不同的ip设置而定
+
+

@@ -1,0 +1,89 @@
+#!/bin/bash
+# Author : tancj
+# modify : 2
+# versions : 2.0
+# date : 2014-06-27
+# describe : check system memory script
+
+#######################################################################
+
+help() {
+  echo "Usage: `basename $0` -w <%> -c <%>"
+  echo "-w is WARNING % of used mem;-c is CRITICAL % of used mem!"
+  exit 3
+}
+
+#######################################################################
+#  TOTAL : System Total Memory
+#  FREE  : System Free Memory
+#  USED  : System Used Memory
+
+TOTAL=`free -m | head -2 |tail -1 |gawk '{print $2}'`
+FREE=`free -m | head -2 |tail -1 |gawk '{print $4}'`
+USED=`free -m | head -2 |tail -1 |gawk '{print $3}'`
+
+# to calculate free percent
+# use the expression free * 100 / total
+FREETMP=`expr $FREE \* 100`
+USEDTMP=`expr $USED \* 100`
+FREE_PERCENT=`expr $FREETMP / $TOTAL`
+USED_PERCENT=`expr $USEDTMP / $TOTAL`
+
+if [ $# -le 3 ];then
+  help
+elif ! [ $1 == "-w" ]&>/dev/null;then
+  help
+elif ! [ $3 == "-c" ]&>/dev/null;then
+  help
+fi
+
+########################################################################
+
+WARNIFNUM() {
+  if ! [ "$WARN" == "$OPTARG" ];then
+    help
+  fi
+  }
+CRITIFNUM() {
+  if ! [ "$CRIT" == "$OPTARG" ];then
+    help
+  fi
+}
+
+while getopts "w:c:h" OPT; do
+  case $OPT in
+  "w")
+  WARNTMP=$OPTARG
+  WARN=$(echo $WARNTMP |bc 2>/dev/null)
+  if ! [ "$WARN" == "$WARNTMP" ];then
+    help
+  fi
+  ;;
+  "c")
+  CRITTMP=$OPTARG
+  CRIT=$(echo $CRITTMP |bc 2>/dev/null)
+  if ! [ "$CRIT" == "$CRITTMP" ];then
+    help
+  fi
+  ;;
+  "h")
+  help;;
+  esac
+done
+
+#########################################################################################################
+
+CRIT_LEVEL=`expr $TOTAL \* $CRIT \/ 100`
+WARN_LEVEL=`expr $TOTAL \* $WARN \/ 100`
+
+if [ $USED_PERCENT -gt $CRIT ];then
+  echo "Memory Used(c) : $USED MB ($USED_PERCENT%,Total=$TOTAL MB , FREE=$FREE MB) | 'USED MEM'=${USED}MB;$WARN_LEVEL;$CRIT_LEVEL;0;$TOTAL"
+exit 2
+fi
+if [ $USED_PERCENT -gt $WARN ];then
+  echo "Memory Used(w) : $USED MB ($USED_PERCENT%,Total=$TOTAL MB , FREE=$FREE MB) | 'USED MEM'=${USED}MB;$WARN_LEVEL;$CRIT_LEVEL;0;$TOTAL"
+exit 1
+else
+  echo "Memory Used(ok) : $USED MB ($USED_PERCENT%,Total=$TOTAL MB , FREE=$FREE MB) | 'USED MEM'=${USED}MB;$WARN_LEVEL;$CRIT_LEVEL;0;$TOTAL"
+exit 0
+fi

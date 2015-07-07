@@ -1,0 +1,42 @@
+注意：先在目标机安装openssl 和 python-pexpect 两个软件 不然脚本无法运行
+
+1: ./controller.py -e 查看功能
+
+2: 在执行./controller.py -c 前请查看修改以下：
+/home/nrpe_multiple/nrpe_install/nrpe-install.py 
+修改def main() 里面的new_ip 设置为本地ip地址 接收反馈的信息
+new_ip='10.9.32.132'
+
+/home/nrpe_multiple/nrpe_install/nrpe-install.py
+/home/nrpe_multiple/scripts/nrpe-test.py
+先在目标机上面 用ip route show 查看下ip信息：
+10.0.0.0/24 dev br-eth1  proto kernel  scope link  src 10.0.0.8
+10.9.32.0/24 dev br-ex  proto kernel  scope link  src 10.9.32.180
+10.80.80.0/24 dev eth1  proto kernel  scope link  src 10.80.80.8
+修改def ip_address 里面的
+test=re.findall(r"br-ex\s+proto\s+kernel\s+scope\s+link\s+src\s+(\S+)\s*", line)
+if re.findall(r"br-ex\s+proto\s+kernel\s+scope\s+link\s+src\s+(\S+)\s*", line):
+把br-ex 修改成你需要显示的ip信息 可修改eth1 或者 br-eth1 根据不同的ip设置而定
+
+3：./controller.py -a 设置目标机的ip地址 nrpe 和 xinet替换的内容 请根据实际情况填写替换的内容 不然
+会替换失败
+4：./controller.py -d 执行完毕以后请查看本地机的log.conf
+/home/nrpe_multiple/log/log.conf
+如果显示：
+[10.9.32.175]
+2014-10-06 14:49:03
+apt-get install 安装完毕！！
+nrpe 安装完毕！！
+
+证明安装完毕 如果有警告信息 请到目标机手动排除警告内容
+
+5：./controller.py -r
+   ./controller.py -x
+   ./controller.py -k
+   ./controller.py -t
+执行完毕以后请查看本地机的log.conf
+如果显示：
+[10.9.32.177]
+2014-10-06 23:10:17
+NRPE v2.15 OK !!!
+证明安装成功 如果有错误信息 请到目标机手动排除错误内容

@@ -1,0 +1,79 @@
+#!/usr/bin/python
+#encoding=utf-8
+
+import os
+import sys
+import ConfigParser
+import pexpect
+import sys
+import re
+import time
+
+
+def Interaction(cmd,timeout):
+    foo = pexpect.spawn(cmd,timeout=timeout)
+    index = foo.expect(["Y/n","(?i)password:","(?i)newest version",pexpect.EOF,pexpect.TIMEOUT])
+    if index == 0:
+        foo.sendline("Y")
+        num=0
+    if index == 1:
+        foo.sendline("kedaadmin")
+        num=0
+    if index == 2:
+        num=0
+    if index == 3:
+        print "子程序的退出"
+        num=1
+    if index == 4:
+        print "等待目标正则表达式超时"
+        num=1
+    foo.expect(pexpect.EOF)
+    foo.close()
+    return num
+
+def ip_address():
+    ef=[]
+    for line in os.popen('ip route show'):
+        test=re.findall(r"src\s+(\S+)\s*", line)
+        if re.findall(r"src\s+(\S+)\s*", line):
+            ef.append(test)
+    jjj=len(ef)
+    if (jjj==1):
+        kkk = ef[0][0]
+    if (jjj>1):
+        for line in os.popen('ip route show'):
+            test=re.findall(r"br-ex\s+proto\s+kernel\s+scope\s+link\s+src\s+(\S+)\s*", line)
+            if re.findall(r"br-ex\s+proto\s+kernel\s+scope\s+link\s+src\s+(\S+)\s*", line):
+                kkk=test[0]
+    return kkk
+
+
+def time():
+    import time
+    t=time.strftime('%Y-%m-%d  %H:%M:%S',time.localtime(time.time()))
+    return t
+
+def main():
+    ip=ip_address()
+    new_ip='10.9.32.132'
+    cmd="/usr/local/nagios/libexec/check_nrpe -H %s" %ip
+    test=os.system(cmd)
+    if (test==0):
+        Interaction("ssh "+new_ip+" echo '\\\n' \>\> /home/nrpe_multiple/log/log.conf",15)
+        ip_add=ip_address()
+        Interaction("ssh "+new_ip+" echo '[%s]' \>\> /home/nrpe_multiple/log/log.conf" %ip_add,15)
+        t=time()
+        Interaction("ssh "+new_ip+" echo '%s' \>\> /home/nrpe_multiple/log/log.conf" %t,15)
+        Interaction("ssh "+new_ip+" echo 'NRPE v2.15 OK !!!' \>\> /home/nrpe_multiple/log/log.conf",15)
+
+    if (test!=0):
+        Interaction("ssh "+new_ip+" echo '\\\n' \>\> /home/nrpe_multiple/log/log.conf",15)
+        ip_add=ip_address()
+        Interaction("ssh "+new_ip+" echo '[%s]' \>\> /home/nrpe_multiple/log/log.conf" %ip_add,15)
+        t=time()
+        Interaction("ssh "+new_ip+" echo '%s' \>\> /home/nrpe_multiple/log/log.conf" %t,15)
+        Interaction("ssh "+new_ip+" echo 'NRPE v2.15 error!!!' \>\> /home/nrpe_multiple/log/log.conf",15)
+
+
+if __name__=='__main__':
+    main()
